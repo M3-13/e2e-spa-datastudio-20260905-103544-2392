@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAppState } from '../../state/AppStateContext';
+import { initialState, useAppState } from '../../state/AppStateContext';
 import { clearPersistedState } from '../../state/persistence';
 
 export default function ClearDataButton() {
@@ -24,7 +24,7 @@ export default function ClearDataButton() {
         type="button"
         className="btn btn-danger"
         onClick={() => {
-          dispatch({ type: 'CLEAR_ALL' });
+          dispatch({ type: 'RESTORE_STATE', state: initialState });
           clearPersistedState();
           setConfirming(false);
         }}
