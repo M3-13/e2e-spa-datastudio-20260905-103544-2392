@@ -8,6 +8,10 @@ import type {
 
 const STORAGE_KEY = 'csv-datastudio-v1';
 
+// Unterdrückt die unmittelbar auf clearPersistedState() folgende Speicherung, damit
+// der Zustands-Reset im AppStateContext den Schlüssel nicht sofort neu schreibt.
+let suppressNextSave = false;
+
 const STATUS_VALUES: readonly string[] = ['empty', 'loading', 'ready', 'error'];
 const FILTER_OPS: readonly string[] = [
   'contains',
@@ -90,7 +94,7 @@ export function isPersistedAppState(value: unknown): value is AppState {
   }
   if (value.sort !== null && !isSortState(value.sort)) return false;
   if (!isFiniteNumber(value.page)) return false;
-  if (!isFiniteNumber(value.pageSize)) return false;
+  if (!isFiniteNumber(value.pageSize) || value.pageSize <= 0) return false;
   if (!isString(value.searchQuery)) return false;
   if (!Array.isArray(value.filters) || !value.filters.every(isColumnFilter)) {
     return false;
@@ -120,6 +124,10 @@ export function loadPersistedState(): AppState | null {
 }
 
 export function savePersistedState(state: AppState): void {
+  if (suppressNextSave) {
+    suppressNextSave = false;
+    return;
+  }
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {
@@ -128,6 +136,7 @@ export function savePersistedState(state: AppState): void {
 }
 
 export function clearPersistedState(): void {
+  suppressNextSave = true;
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch {

@@ -172,13 +172,28 @@ describe('loadPersistedState validiert Typen', () => {
     store(makeState({ pageSize: 'viel' as unknown as number }));
     expect(loadPersistedState()).toBeNull();
   });
+
+  it('liefert null bei Seitengröße 0 oder negativ', () => {
+    store(makeState({ pageSize: 0 }));
+    expect(loadPersistedState()).toBeNull();
+    store(makeState({ pageSize: -5 }));
+    expect(loadPersistedState()).toBeNull();
+  });
 });
 
 describe('clearPersistedState', () => {
-  it('entfernt den gespeicherten Zustand', () => {
+  it('entfernt den gespeicherten Zustand und unterdrückt die direkt folgende Speicherung', () => {
     savePersistedState(makeState());
     clearPersistedState();
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
     expect(loadPersistedState()).toBeNull();
+
+    // Einmalige Unterdrückung: die direkt folgende Speicherung wird übersprungen.
+    savePersistedState(makeState());
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+
+    // Danach wird wieder gespeichert.
+    savePersistedState(makeState());
+    expect(loadPersistedState()).not.toBeNull();
   });
 });
