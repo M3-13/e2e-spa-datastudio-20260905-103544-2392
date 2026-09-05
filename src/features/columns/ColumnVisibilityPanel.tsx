@@ -10,7 +10,6 @@ const actionsStyle: CSSProperties = {
 };
 
 const compactButtonStyle: CSSProperties = {
-  minHeight: '36px',
   padding: '8px 16px',
 };
 
