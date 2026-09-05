@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { countFrequencies } from './BarChart';
+import { computeBarLayout, countFrequencies } from './BarChart';
 import { extractSeries } from './LineChart';
 
 describe('countFrequencies', () => {
@@ -21,6 +21,24 @@ describe('countFrequencies', () => {
 
   it('gibt bei leerer Eingabe ein leeres Array zurück', () => {
     expect(countFrequencies([], 0)).toEqual([]);
+  });
+});
+
+describe('computeBarLayout', () => {
+  it('hält Balken auch bei hochkardinalen Spalten überlappungsfrei', () => {
+    for (const categoryCount of [1, 2, 6, 71, 72, 100, 500]) {
+      const { slotWidth, barWidth } = computeBarLayout(categoryCount);
+      expect(barWidth).toBeLessThanOrEqual(slotWidth);
+      expect(barWidth).toBeGreaterThanOrEqual(8);
+      expect(barWidth).toBeLessThanOrEqual(48);
+    }
+  });
+
+  it('verbreitert die Zeichenfläche, wenn Kategorien nicht mehr in die Basisbreite passen', () => {
+    const few = computeBarLayout(4);
+    const many = computeBarLayout(100);
+    expect(many.totalWidth).toBeGreaterThan(few.totalWidth);
+    expect(many.totalWidth).toBeGreaterThanOrEqual(100 * 8);
   });
 });
 
