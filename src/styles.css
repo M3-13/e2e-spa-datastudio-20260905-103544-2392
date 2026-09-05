@@ -34,7 +34,8 @@
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 }
 
-[data-theme='dark'] {
+[data-theme='dark'],
+.dark {
   --color-bg: #0F1115;
   --color-surface: #1A1D24;
   --color-fg: #E6E8EC;

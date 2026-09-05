@@ -76,9 +76,6 @@ export function matchesFilter(
 }
 
 export function parseNumber(value: string): number | null {
-  if (value === null || value === undefined) {
-    return null;
-  }
   const trimmed = value.trim();
   if (trimmed === '') {
     return null;
