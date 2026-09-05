@@ -19,6 +19,30 @@ function truncateLabel(label: string, maxLength = 12): string {
   return label.length > maxLength ? `${label.slice(0, maxLength - 1)}…` : label;
 }
 
+const FONT_SIZE = 12;
+const AVG_GLYPH_WIDTH = 7;
+const ROTATION_RADIANS = Math.PI / 4;
+
+export function rotatedLabelWidth(labelLength: number): number {
+  return (
+    labelLength * AVG_GLYPH_WIDTH * Math.cos(ROTATION_RADIANS) +
+    FONT_SIZE * Math.sin(ROTATION_RADIANS)
+  );
+}
+
+export function labelTruncationLength(categoryCount: number): number {
+  if (categoryCount <= 6) {
+    return 12;
+  }
+  if (categoryCount <= 20) {
+    return 8;
+  }
+  if (categoryCount <= 60) {
+    return 5;
+  }
+  return 4;
+}
+
 interface BarChartProps {
   columns: ColumnDef[];
   rows: Row[];
@@ -32,7 +56,6 @@ const BASE_PLOT_WIDTH = BASE_WIDTH - MARGIN.left - MARGIN.right;
 const PLOT_HEIGHT = HEIGHT - MARGIN.top - MARGIN.bottom;
 const MIN_BAR_WIDTH = 8;
 const MAX_BAR_WIDTH = 48;
-const MIN_SLOT_WIDTH = MIN_BAR_WIDTH * 1.25;
 
 export interface BarLayout {
   slotWidth: number;
@@ -41,8 +64,12 @@ export interface BarLayout {
   totalWidth: number;
 }
 
-export function computeBarLayout(categoryCount: number): BarLayout {
-  const slotWidth = Math.max(BASE_PLOT_WIDTH / categoryCount, MIN_SLOT_WIDTH);
+export function computeBarLayout(
+  categoryCount: number,
+  maxLabelLength = labelTruncationLength(categoryCount),
+): BarLayout {
+  const minSlot = Math.max(MIN_BAR_WIDTH * 1.25, rotatedLabelWidth(maxLabelLength));
+  const slotWidth = Math.max(BASE_PLOT_WIDTH / categoryCount, minSlot);
   const barWidth = Math.min(
     Math.max(slotWidth * 0.75, MIN_BAR_WIDTH),
     MAX_BAR_WIDTH,
@@ -71,7 +98,11 @@ export default function BarChart({ columns, rows, columnId }: BarChartProps) {
   }
 
   const maxCount = Math.max(...data.map((datum) => datum.count));
-  const { slotWidth, barWidth, totalWidth } = computeBarLayout(data.length);
+  const maxLabelLength = labelTruncationLength(data.length);
+  const { slotWidth, barWidth, totalWidth } = computeBarLayout(
+    data.length,
+    maxLabelLength,
+  );
   const ticks = makeTicks(maxCount);
   const rotateLabels = data.length > 6;
 
@@ -171,7 +202,7 @@ export default function BarChart({ columns, rows, columnId }: BarChartProps) {
                   rotateLabels ? `rotate(-45 ${labelX} ${labelY})` : undefined
                 }
               >
-                {truncateLabel(datum.label)}
+                {truncateLabel(datum.label, maxLabelLength)}
               </text>
             </g>
           );

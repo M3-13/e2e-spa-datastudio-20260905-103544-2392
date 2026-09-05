@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { computeBarLayout, countFrequencies } from './BarChart';
+import {
+  computeBarLayout,
+  countFrequencies,
+  labelTruncationLength,
+  rotatedLabelWidth,
+} from './BarChart';
 import { extractSeries } from './LineChart';
 
 describe('countFrequencies', () => {
@@ -39,6 +44,23 @@ describe('computeBarLayout', () => {
     const many = computeBarLayout(100);
     expect(many.totalWidth).toBeGreaterThan(few.totalWidth);
     expect(many.totalWidth).toBeGreaterThanOrEqual(100 * 8);
+  });
+});
+
+describe('label layout', () => {
+  it('kürzt Labels bei steigender Kategorienzahl stärker', () => {
+    expect(labelTruncationLength(6)).toBeGreaterThan(labelTruncationLength(60));
+    expect(labelTruncationLength(60)).toBeGreaterThanOrEqual(
+      labelTruncationLength(500),
+    );
+  });
+
+  it('rotierte Labels überlappen auch bei hochkardinalen Spalten nicht', () => {
+    for (const categoryCount of [7, 20, 21, 60, 61, 100, 500]) {
+      const maxLabelLength = labelTruncationLength(categoryCount);
+      const { slotWidth } = computeBarLayout(categoryCount, maxLabelLength);
+      expect(rotatedLabelWidth(maxLabelLength)).toBeLessThanOrEqual(slotWidth);
+    }
   });
 });
 
