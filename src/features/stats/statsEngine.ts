@@ -33,7 +33,7 @@ export function computeStats(
   }
 
   for (const row of filteredRows) {
-    const value = parseNumber(row[columnIndex]);
+    const value = parseNumber(row[columnIndex] ?? '');
     if (value === null) {
       result.missing += 1;
       continue;
